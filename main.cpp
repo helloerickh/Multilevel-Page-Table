@@ -11,8 +11,8 @@
 
 #define DEFAULT_CACHE_CAP 0
 #define DEFAULT_MODE 0
-/*Default for # of addresses processed is ALL ADDRESSES
-  N addresses if nFlag TRUE, otherwise ALL ADDRESSES*/
+/*DEFAULT_NUM_ADDR is ALL ADDRESSES
+  N addresses processed if nFlag TRUE, otherwise ALL ADDRESSES*/
 
 //modes
 #define SUMMARY 0
@@ -41,11 +41,12 @@ int main(int argc, char **argv)
 
   std::vector<int>* levelBits = new std::vector<int>;
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
-  printf("numAddr: %d cacheCap: %d mode: %d \n", numAddr, cacheCap, mode);
-  printf("trace file: %s nFlag: %d", argv[pathIdx], nFlag);
-  for(auto i : *levelBits){
-    printf("%d", i);
-  }
+  // printf("numAddr: %d cacheCap: %d mode: %d \n", numAddr, cacheCap, mode);
+  // printf("trace file: %s nFlag: %d\n", argv[pathIdx], nFlag);
+  // for(auto i : *levelBits){
+  //   printf("%d ", i);
+  // }
+  // printf("\n");
   delete(levelBits);
   return (0);
 }
@@ -57,9 +58,9 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
   bool cFlag = false;
   nFlag = false;  //to determine ALL or n # of addresses
 
-  /*Retrieve optional arguments
-    First if statement of each case checks for multiple of same option
-    -n and -c options expect integers*/
+  /*Retrieve optional arguments:
+    First if statement of each case checks for multiple of same option.
+    -n and -c options expect integers.*/
   int Option;
   while((Option = getopt(argc, argv, "o:n:c:")) != -1){
     switch(Option){
@@ -116,12 +117,8 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
           printf("ERROR: Multiple -c options\n");
           exit(EXIT_FAILURE);
         }
-        else if(!isdigit(*optarg)){
-          printf("ERROR: -c expects integer\n");
-          exit(EXIT_FAILURE);
-        }
         else if(atoi(optarg) < 0){
-          printf("ERROR: -c argument must >= 0");
+          printf("Cache capacity must be a number, greater than or equal to 0");
           exit(EXIT_FAILURE);
         }
         else{
@@ -158,7 +155,6 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
     //check if valid file
     if((ifp = fopen(argv[idx], "rb")) == NULL){
       printf("Unable to open <<%s>>\n", argv[idx]);
-      fclose(ifp);
       exit(EXIT_FAILURE);
     }
     fclose(ifp);
