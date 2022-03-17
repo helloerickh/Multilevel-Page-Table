@@ -3,6 +3,7 @@
 #include <unistd.h> //getopt
 #include <vector>   //vector
 #include <locale>   //isdigit
+#include <string.h> //strcmp
 
 #include "PageTable.h"
 #include "tracereader.h"
@@ -68,22 +69,22 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
           exit(EXIT_FAILURE);
         }
         //select mode
-        else if(optarg == "summary"){
+        else if(strcmp("summary", optarg)){
           mode = SUMMARY;
         }
-        else if(optarg == "bitmasks"){
+        else if(strcmp("bitmasks", optarg)){
           mode = BITMASKS;
         }
-        else if(optarg == "virtual2physical"){
+        else if(strcmp("virtual2physical", optarg)){
           mode = VIRTUAL2PHYSICAL;
         }
-        else if(optarg == "v2p_tlb_pt"){
+        else if(strcmp("v2p_tlb_pt", optarg)){
           mode = V2P_TLB_PT;
         }
-        else if(optarg == "vpn2pfn"){
+        else if(strcmp("vpn2pfn", optarg)){
           mode = VPN2PFN;
         }
-        else if(optarg == "offset"){
+        else if(strcmp("offset", optarg)){
           mode = OFFSET;
         }
         else{
