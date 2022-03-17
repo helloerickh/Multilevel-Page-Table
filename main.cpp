@@ -1,5 +1,8 @@
 #include <stdio.h>  //FILE
 #include <stdlib.h> //exit
+#include <unistd.h> //getopt
+
+#include "PageTable.h"
 #include "tracereader.h"
 #include "output_mode_helpers.h"
 
