@@ -3,6 +3,7 @@
 
 class Map{
     public:
+    unsigned int physicalFrameNumber;
     Map();
 };
 

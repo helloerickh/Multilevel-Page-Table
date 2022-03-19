@@ -24,8 +24,14 @@
 
 #define MAXTOTALNUMBITS 28
 
+/*
+REFERENCES
+Generate Bit Mask
+https://stackoverflow.com/questions/1392059/algorithm-to-generate-bit-mask
+*/
 
-void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<int>* levelBits, int& pathIdx);
+
+void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx);
 
 int main(int argc, char **argv)
 {
@@ -39,7 +45,7 @@ int main(int argc, char **argv)
   int pathIdx;
   bool nFlag;
 
-  std::vector<int>* levelBits = new std::vector<int>;
+  std::vector<unsigned int>* levelBits = new std::vector<unsigned int>;
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
   // printf("numAddr: %d cacheCap: %d mode: %d \n", numAddr, cacheCap, mode);
   // printf("trace file: %s nFlag: %d\n", argv[pathIdx], nFlag);
@@ -47,11 +53,15 @@ int main(int argc, char **argv)
   //   printf("%d ", i);
   // }
   // printf("\n");
+  PageTable* bruh = new PageTable(*levelBits);
   delete(levelBits);
+  bruh->printBitMasks();
+  bruh->printBitShifts();
+  bruh->printEntriesPerLevel();
   return (0);
 }
 
-void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<int>* levelBits, int& pathIdx){
+void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx){
   /*flags to check presence of option and throw error for more than 1
     of same option*/
   bool oFlag = false;

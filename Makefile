@@ -1,10 +1,10 @@
 CXX=g++ 
 CXXFLAGS=-std=c++11 -g
 
-pagingwithtlb: main.o tracereader.o output_mode_helpers.o
+pagingwithtlb: main.o tracereader.o output_mode_helpers.o PageTable.o
 	$(CXX) $(CXXFLAGS) -o pagingwithtlb $^
 
-main.o: main.cpp tracereader.h output_mode_helpers.h
+main.o: main.cpp tracereader.h output_mode_helpers.h PageTable.h
 
 tracereader.o: tracereader.h tracereader.cpp
 
