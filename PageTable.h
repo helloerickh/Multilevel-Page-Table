@@ -2,7 +2,7 @@
 #define PAGETABLE_H
 
 #include "Level.h"
-#include "Map.h"    //return of pagelookup
+#include "Map.h"    //return type of pagelookup
 #include <vector>
 
 #define ADDRESS_SIZE 32
@@ -19,8 +19,11 @@ class PageTable{
     std::vector<unsigned int> numEntriesPerLevel;
 
     class Level* root;
-
+    //CONSTRUCTOR
     PageTable(std::vector<unsigned int> pageSizes);
+    //METHODS
+    void pageTableInsert(unsigned int address);
+    class Map* pageTableLookup(unsigned int address);
     void printPageTable();
 };
 

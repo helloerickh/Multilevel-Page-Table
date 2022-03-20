@@ -51,6 +51,10 @@ int main(int argc, char **argv)
   PageTable* bruh = new PageTable(*levelBits);
   delete(levelBits);
   bruh->printPageTable();
+  delete(bruh);
+  Level* test = new Level();
+  test = nullptr;
+
   return (0);
 }
 

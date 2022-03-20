@@ -22,3 +22,15 @@ FUNCTIONALITY
 6. TLB cache hits + page table hits + page table misses = total # of address    accesses
 
 7. Print appropriate outputs to the standard output as specified in "User Interface"
+
+
+PageTable constructor [x]
+    - get bitmasks for each level [x]
+    - get bit shifts for each level [x]
+    - get number of entries per level [x]
+    - initialize framecounter, hit/miss counter, level count,
+        root level pointer [x]
+Level constructor [x]
+    - populate nextLevel vector [x]
+    - populate map vector [x]
+Map constructor [x]
