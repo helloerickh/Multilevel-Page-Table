@@ -13,6 +13,7 @@ class PageTable{
     int frameCount;
     int pageTableHit;
     int pageTableMiss;
+    unsigned int offsetMask;
 
     std::vector<unsigned int> bitmasks;
     std::vector<unsigned int> shiftInfo;
@@ -24,6 +25,7 @@ class PageTable{
     //METHODS
     void pageTableInsert(unsigned int address);
     class Map* pageTableLookup(unsigned int address);
+    unsigned int getOffset(unsigned int address);
     void printPageTable();
 };
 

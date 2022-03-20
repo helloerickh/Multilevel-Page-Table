@@ -39,22 +39,60 @@ int main(int argc, char **argv)
     printf("USAGE: %s <file>.tr", argv[0]);
     exit(EXIT_FAILURE);
   }
+  //argument variables
   int numAddr;
   int cacheCap;
   int mode;
   int pathIdx;
   bool nFlag;
-
   std::vector<unsigned int>* levelBits = new std::vector<unsigned int>;
+  //get arguments
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
-  
+  //initialize PageTable
   PageTable* bruh = new PageTable(*levelBits);
+  //cleanup
   delete(levelBits);
-  bruh->printPageTable();
-  delete(bruh);
-  Level* test = new Level();
-  test = nullptr;
 
+  //OUTPUT
+  if(mode == BITMASKS){
+    //bitmask mode does not require addresses to be processed
+    report_bitmasks(bruh->levelCount, &(bruh->bitmasks[0]));
+    return 0;
+  }
+  else{
+    //address related output modes
+    FILE *ifp;
+    unsigned long i = 0;
+    p2AddrTr trace;
+    ifp = fopen(argv[pathIdx], "rb");
+    while(!feof(ifp)){
+      //check if addresses processed cap has been met
+      if(nFlag){
+        if(i >= numAddr){
+          return 0;
+        }
+      }
+      if(NextAddress(ifp, &trace)){
+        if(mode == OFFSET){
+          hexnum(bruh->getOffset(trace.addr));
+        }
+        else if(mode == VIRTUAL2PHYSICAL){
+          
+        }
+        i++;
+      }
+    }
+    fclose(ifp);
+  }
+
+
+  //cleanup
+  //bruh->printPageTable();
+  bruh->bitmasks.clear();
+  bruh->shiftInfo.clear();
+  bruh->numEntriesPerLevel.clear();
+  delete(bruh->root);
+  delete(bruh);
   return (0);
 }
 
@@ -77,22 +115,22 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
           exit(EXIT_FAILURE);
         }
         //select mode
-        else if(strcmp("summary", optarg)){
+        else if(strcmp("summary", optarg) == 0){
           mode = SUMMARY;
         }
-        else if(strcmp("bitmasks", optarg)){
+        else if(strcmp("bitmasks", optarg) == 0){
           mode = BITMASKS;
         }
-        else if(strcmp("virtual2physical", optarg)){
+        else if(strcmp("virtual2physical", optarg) == 0){
           mode = VIRTUAL2PHYSICAL;
         }
-        else if(strcmp("v2p_tlb_pt", optarg)){
+        else if(strcmp("v2p_tlb_pt", optarg) == 0){
           mode = V2P_TLB_PT;
         }
-        else if(strcmp("vpn2pfn", optarg)){
+        else if(strcmp("vpn2pfn", optarg) == 0){
           mode = VPN2PFN;
         }
-        else if(strcmp("offset", optarg)){
+        else if(strcmp("offset", optarg) == 0){
           mode = OFFSET;
         }
         else{
@@ -186,7 +224,5 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
       exit(EXIT_FAILURE);
     }
   }
-
-  
 
 }

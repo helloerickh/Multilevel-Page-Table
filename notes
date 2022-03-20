@@ -34,3 +34,18 @@ Level constructor [x]
     - populate nextLevel vector [x]
     - populate map vector [x]
 Map constructor [x]
+
+OUTPUT modes
+
+bitmasks
+    - initialize page table structure
+    - get levelcount
+    - get pass address of first index (&vec[0])
+
+
+
+offset
+    - initialize page table structure
+    - get sum of page size levels
+    - generate offset bit mask with length = sum, start = sum
+    - virtual address &= offset bitmask, create method
