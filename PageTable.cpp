@@ -2,41 +2,42 @@
 #include <stdio.h>
 
 PageTable::PageTable(std::vector<unsigned int> pageSizes){
-    levelCount = pageSizes.size();
+    this->levelCount = pageSizes.size();
+    this->frameCount = 0;
+    this->pageTableHit = 0;
+    this-> pageTableMiss = 0;
     //keep track of first untouched bit in ADDRESS_SIZE bit address
     int currBit = 0;
     for(int i = 0; i < levelCount; i++){
         //push BitShift to back of vector
-        shiftInfo.push_back(generateBitShift(ADDRESS_SIZE, pageSizes[i], currBit));
+        this->shiftInfo.push_back(generateBitShift(ADDRESS_SIZE, pageSizes[i], currBit));
         //push BitMask to back of vector
-        bitmasks.push_back(generateBitMask(pageSizes[i], ADDRESS_SIZE - currBit));
+        this->bitmasks.push_back(generateBitMask(pageSizes[i], ADDRESS_SIZE - currBit));
         //push 2^pageSizes[i] to back of vector
-        numEntriesPerLevel.push_back((1 << pageSizes[i]));
+        this->numEntriesPerLevel.push_back((1 << pageSizes[i]));
         currBit += pageSizes[i];
     }
     //TODO Level Constructor
+    this->root = new Level(this, 0);
 
 }
 
-void PageTable::printBitMasks(){
+void PageTable::printPageTable(){
+    printf("LEVELCOUNT: %d FRAMECOUNT: %d TABLEHIT: %d TABLEMISS: %d \n", this->levelCount, this->frameCount, this->pageTableHit, this->pageTableMiss);
     printf("BITMASKS \n");
-    for(auto i : bitmasks){
+    for(auto i : this->bitmasks){
         printf("%X ", i);
     }
     printf("\n");
-}
 
-void PageTable::printBitShifts(){
     printf("SHIFT INFO \n");
-    for(auto i : shiftInfo){
+    for(auto i : this->shiftInfo){
         printf("%d ", i);
     }
     printf("\n");
-}
 
-void PageTable::printEntriesPerLevel(){
     printf("ENTRIES PER LEVEL \n");
-    for(auto i : numEntriesPerLevel){
+    for(auto i : this->numEntriesPerLevel){
         printf("%d ", i);
     }
     printf("\n");

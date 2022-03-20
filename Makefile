@@ -1,20 +1,20 @@
 CXX=g++ 
 CXXFLAGS=-std=c++11 -g
 
-pagingwithtlb: main.o tracereader.o output_mode_helpers.o PageTable.o
+pagingwithtlb: main.o tracereader.o output_mode_helpers.o PageTable.o Level.o Map.o
 	$(CXX) $(CXXFLAGS) -o pagingwithtlb $^
 
 main.o: main.cpp tracereader.h output_mode_helpers.h PageTable.h
 
-tracereader.o: tracereader.h tracereader.cpp
+PageTable.o: PageTable.h PageTable.cpp
 
-output_mode_helpers.o: output_mode_helpers.h output_mode_helpers.cpp
-
-Level.o: Level.h Level.cpp
+Level.o: Level.h Level.cpp 
 
 Map.o: Map.h Map.cpp
 
-PageTable.o: Map.h Level.h PageTable.h PageTable.cpp
+tracereader.o: tracereader.h tracereader.cpp
+
+output_mode_helpers.o: output_mode_helpers.h output_mode_helpers.cpp
 
 clean: 
 	rm *.o

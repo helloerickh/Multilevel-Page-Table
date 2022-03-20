@@ -3,7 +3,8 @@
 
 class Map{
     public:
-    unsigned int physicalFrameNumber;
+    bool isValid;
+    unsigned int frame;
     Map();
 };
 

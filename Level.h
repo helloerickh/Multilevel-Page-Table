@@ -13,6 +13,6 @@ class Level{
     std::vector<class Map*> map;
     class PageTable* table;
 
-    Level();
+    Level(PageTable* table, int depth);
 };
 #endif

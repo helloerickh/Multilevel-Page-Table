@@ -47,17 +47,10 @@ int main(int argc, char **argv)
 
   std::vector<unsigned int>* levelBits = new std::vector<unsigned int>;
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
-  // printf("numAddr: %d cacheCap: %d mode: %d \n", numAddr, cacheCap, mode);
-  // printf("trace file: %s nFlag: %d\n", argv[pathIdx], nFlag);
-  // for(auto i : *levelBits){
-  //   printf("%d ", i);
-  // }
-  // printf("\n");
+  
   PageTable* bruh = new PageTable(*levelBits);
   delete(levelBits);
-  bruh->printBitMasks();
-  bruh->printBitShifts();
-  bruh->printEntriesPerLevel();
+  bruh->printPageTable();
   return (0);
 }
 
