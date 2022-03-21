@@ -1,6 +1,11 @@
 #include "PageTable.h"
 #include <stdio.h>
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+*/
+
 /*Page Table Constructor
 INPUT: vector of unsigned integers representing page sizes
 - Initialize class members and pointer to root level*/
@@ -74,16 +79,27 @@ void PageTable::printPageTable(){
     printf("\n");
 }
 
+/*Calculate the total number of bytes used by PageTable
+INPUT: PageTable pointer
+RETURN: unsigned int bytes used*/
 unsigned int bytesUsed(PageTable* ptr){
     unsigned int bytes = 0;
     bytesUsedHelper(ptr->root, bytes);
     return bytes;
 }
 
+/*Calculate the total number of bytes used for all levels in PageTable
+INPUT: Level pointer, unsigned int reference to bytesUsed
+- total bytes used by inner level = # non null entries + size of level + size of nextLevel vector
+- total bytes used by leaf level = # non null entries + size of level + size of map vector*/
 void bytesUsedHelper(Level* ptr, unsigned int &bytes){
-    bytes += ptr->entryCount;
+    //bytes used by entries
+    bytes += ptr->entryCount * sizeof(*ptr);
+    //size of curr level
+    bytes += sizeof(*ptr);
     if(!ptr->isLeaf){
-        bytes += ptr->nextLevel.size();
+        //bytes used by nextlevel
+        bytes += sizeof(ptr->nextLevel) * ptr->nextLevel.size();
         for(int i = 0; i < ptr->table->numEntriesPerLevel[ptr->depth]; i++){
             if(ptr->nextLevel[i]){
                 bytesUsedHelper(ptr->nextLevel[i], bytes);
@@ -91,7 +107,8 @@ void bytesUsedHelper(Level* ptr, unsigned int &bytes){
         }   
     }
     else{
-        bytes+=ptr->map.size();
+        //bytes used by map
+        bytes+= sizeof(ptr->map) * ptr->map.size();
     }
     return;
 }

@@ -1,4 +1,9 @@
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+*/
+
 /* C and C++ define some of their types in different places.
  * Check and see if we are using C or C++ and include appropriately
  * so that this will compile under C and C++

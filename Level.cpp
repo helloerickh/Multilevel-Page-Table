@@ -1,5 +1,10 @@
 #include "Level.h"
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+*/
+
 /*Level Constructor
 - initialize class members
 - if level is a leaf level, initialize vector of Map pointers
