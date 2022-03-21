@@ -30,7 +30,15 @@ Generate Bit Mask
 https://stackoverflow.com/questions/1392059/algorithm-to-generate-bit-mask
 */
 
+//DRIVERS FOR MODES
+void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void bitmasksDriver(PageTable* ptr);
+void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag);
 
+//GET ARGUMENTS
 void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx);
 
 int main(int argc, char **argv)
@@ -53,47 +61,136 @@ int main(int argc, char **argv)
   //cleanup
   delete(levelBits);
 
-  //OUTPUT
-  if(mode == BITMASKS){
-    //bitmask mode does not require addresses to be processed
-    report_bitmasks(bruh->levelCount, &(bruh->bitmasks[0]));
-    return 0;
+  FILE *ifp;
+  ifp = fopen(argv[pathIdx], "rb");
+  //OUTPUT CONTROL
+  if(mode == SUMMARY){
+    summaryDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+  }
+  else if(mode == BITMASKS){
+    bitmasksDriver(bruh);
+  }
+  else if(mode == VIRTUAL2PHYSICAL){
+    virtual2physicalDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+  }
+  else if(mode == V2P_TLB_PT){
+    v2p_tlb_ptDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+  }
+  else if(mode == VPN2PFN){
+    vpn2pfnDriver(bruh, ifp, numAddr, cacheCap, nFlag);
   }
   else{
-    //address related output modes
-    FILE *ifp;
-    unsigned long i = 0;
-    p2AddrTr trace;
-    ifp = fopen(argv[pathIdx], "rb");
-    while(!feof(ifp)){
-      //check if addresses processed cap has been met
-      if(nFlag){
-        if(i >= numAddr){
-          return 0;
-        }
-      }
-      if(NextAddress(ifp, &trace)){
-        if(mode == OFFSET){
-          hexnum(bruh->getOffset(trace.addr));
-        }
-        else if(mode == VIRTUAL2PHYSICAL){
-          
-        }
-        i++;
-      }
-    }
-    fclose(ifp);
+    offsetDriver(bruh, ifp, numAddr, nFlag);
   }
-
-
-  //cleanup
   //bruh->printPageTable();
+
+  //CLEANUP
+  fclose(ifp);
   bruh->bitmasks.clear();
   bruh->shiftInfo.clear();
   bruh->numEntriesPerLevel.clear();
   delete(bruh->root);
   delete(bruh);
   return (0);
+}
+
+//DRIVER FOR SUMMARY MODE
+void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+  return;
+}
+
+//DRIVER FOR BITMASKS MODE, prints out bit masks 
+void bitmasksDriver(PageTable* ptr){
+  report_bitmasks(ptr->levelCount, &(ptr->bitmasks[0]));
+}
+
+//DRIVER FOR VIRTUAL2PHYSICAL, prints out virtual address -> physical address
+void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+  unsigned long  i = 0;
+  p2AddrTr trace;
+  while(!feof(file)){
+    //enforce address processing max
+    if(nFlag){
+      if(i >= numAddr){
+        return;
+      }
+    }
+    if(NextAddress(file, &trace)){
+      unsigned int physicalAddress = trace.addr;
+      //lookup address in PageTable, 
+      Map* map = ptr->pageTableLookup(trace.addr);
+    //check if address does not exist in PageTable
+      if(!map){
+        //ptr->pageTableMiss++;
+        //insert address into PageTable
+        ptr->pageTableInsert(trace.addr);
+      //lookup newly inserted address
+        map = ptr->pageTableLookup(trace.addr);
+      }
+      //get offset bits of virtual address
+      physicalAddress &= ptr->offsetMask;
+      //get frame number and place it in physical frame bits
+      physicalAddress += ((map->frame) << (ptr->offsetSize));
+
+      report_virtual2physical(trace.addr, physicalAddress);
+    }
+    i++;
+  }
+}
+
+//DRIVER FOR V2P_TLB_PT MODE, prints virtual address -> physical address 
+//includes hit or miss information for TLB and PageTable 
+void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+  return;
+}
+
+//DRIVER FOR VPN2PFN MODE, prints vpn -> pfn
+void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+  unsigned long  i = 0;
+  p2AddrTr trace;
+  while(!feof(file)){
+    //enforce address processing max
+    if(nFlag){
+      if(i >= numAddr){
+        return;
+      }
+    }
+    if(NextAddress(file, &trace)){
+      //lookup address in PageTable, 
+      Map* map = ptr->pageTableLookup(trace.addr);
+      //check if address does not exist in PageTable
+      if(!map){
+        //ptr->pageTableMiss++;
+        //insert address into PageTable
+        ptr->pageTableInsert(trace.addr);
+        //lookup newly inserted address
+        map = ptr->pageTableLookup(trace.addr);
+      }
+      //vector to hold pages
+      std::vector<unsigned int> pageHolder;
+      for(int i = 0; i < ptr->levelCount; i++){
+        pageHolder.push_back(virtualAddressToPageNum(trace.addr, ptr->bitmasks[i], ptr->shiftInfo[i]));
+      }
+      report_pagemap(ptr->levelCount, &pageHolder[0], map->frame);
+      i++;
+    }
+  }
+}
+
+//DRIVER FOR OFFSET MODE, prints out offset for virtual address
+void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag){
+  unsigned long i = 0;
+  p2AddrTr trace;
+  while(!feof(file)){
+    if(nFlag){
+      if(i >= numAddr){
+        return;
+      }
+    }
+    if(NextAddress(file, &trace)){
+      hexnum(ptr->getOffset(trace.addr));
+    }
+  }
 }
 
 void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx){

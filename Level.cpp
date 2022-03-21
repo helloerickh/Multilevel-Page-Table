@@ -22,15 +22,23 @@ Level::Level(PageTable* table, int depth){
     }
     //if leaf push Map pointers to vector
     if(this->isLeaf){
+        // for(int i = 0; i < table->numEntriesPerLevel[depth]; i++){
+        //     this->map.push_back(new Map());
+        // } 
+        this->map.resize(table->numEntriesPerLevel[depth]);
         for(int i = 0; i < table->numEntriesPerLevel[depth]; i++){
-            this->map.push_back(new Map());
-        } 
+            this->map[i] = new Map();
+        }
     }
     //if non leaf, push Level pointers to vector and set them to null
     else{
+        // for(int i = 0; i < table->numEntriesPerLevel[depth]; i++){
+        //     this->nextLevel.push_back(new Level());
+        //     this->nextLevel[i] = nullptr;
+        // }
+        this->nextLevel.resize(table->numEntriesPerLevel[depth]);
         for(int i = 0; i < table->numEntriesPerLevel[depth]; i++){
-            this->nextLevel.push_back(new Level());
-            this->nextLevel[0] = nullptr;
+            this->nextLevel[i] = nullptr;
         }
     }
 }

@@ -42,7 +42,13 @@ bitmasks
     - get levelcount
     - get pass address of first index (&vec[0])
 
+virtual2physical
 
+v2p_tlb_pt
+
+vpn2pfn
+
+summary
 
 offset
     - initialize page table structure

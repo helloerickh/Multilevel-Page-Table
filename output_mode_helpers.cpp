@@ -62,7 +62,7 @@ void hexnum(uint32_t number) {
 
 /*
  * report_summary
- * Write out a mesasge that indicates summary information for the page table.
+ * Write out a message that indicates summary information for the page table.
  * page_size - Number of bytes per page
  * cacheHits - Number of vpn->pfn mapping found in the TLB
  * pageTableHits - Number of times a page was mapped.

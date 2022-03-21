@@ -9,12 +9,9 @@ PageTable::PageTable(std::vector<unsigned int> pageSizes){
     this->frameCount = 0;
     this->pageTableHit = 0;
     this-> pageTableMiss = 0;
-    unsigned int offsetLength = 0;
-    //keep track of first untouched bit in ADDRESS_SIZE bit address
+    //keep track of first untouched bit in ADDRESS_SIZE-bit address
     int currBit = 0;
-    for(int i = 0; i < levelCount; i++){
-        //increment offsetLength
-        offsetLength += pageSizes[i];
+    for(int i = 0; i < this->levelCount; i++){
         //push BitShift to back of vector
         this->shiftInfo.push_back(generateBitShift(ADDRESS_SIZE, pageSizes[i], currBit));
         //push BitMask to back of vector
@@ -23,7 +20,10 @@ PageTable::PageTable(std::vector<unsigned int> pageSizes){
         this->numEntriesPerLevel.push_back((1 << pageSizes[i]));
         currBit += pageSizes[i];
     }
-    this->offsetMask = generateBitMask(offsetLength, offsetLength);
+    //currbit should now be at the first LSB of offset
+    this->fullVPNMask = generateBitMask(currBit, ADDRESS_SIZE);
+    this->offsetSize = ADDRESS_SIZE - currBit;
+    this->offsetMask = generateBitMask(ADDRESS_SIZE - currBit, ADDRESS_SIZE - currBit);
     //construct root level
     this->root = new Level(this, 0);
 
