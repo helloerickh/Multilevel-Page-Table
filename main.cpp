@@ -293,7 +293,7 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
           printf("ERROR: -p expects integer\n");
           exit(EXIT_FAILURE);
         }
-        else if(optarg < 0){
+        else if(atoi(optarg) < 0){
           printf("ERROR: -o argument must be >= 0");
           exit(EXIT_FAILURE);
         }

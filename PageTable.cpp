@@ -45,7 +45,7 @@ INPUT: unsigned int virtual address
 RETURN: Map pointer for physical frame
 - Starts lookup from root*/
 Map* PageTable::pageTableLookup(unsigned int address){
-    pageLevelLookup(this->root, address);
+    return pageLevelLookup(this->root, address);
 }
 
 /*Get offset of a virtual address
