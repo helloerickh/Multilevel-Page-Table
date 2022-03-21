@@ -21,7 +21,6 @@ PageTable::PageTable(std::vector<unsigned int> pageSizes){
         currBit += pageSizes[i];
     }
     //currbit should now be at the first LSB of offset
-    this->fullVPNMask = generateBitMask(currBit, ADDRESS_SIZE);
     this->offsetSize = ADDRESS_SIZE - currBit;
     this->offsetMask = generateBitMask(ADDRESS_SIZE - currBit, ADDRESS_SIZE - currBit);
     //construct root level
@@ -73,6 +72,28 @@ void PageTable::printPageTable(){
         printf("%d ", i);
     }
     printf("\n");
+}
+
+unsigned int bytesUsed(PageTable* ptr){
+    unsigned int bytes = 0;
+    bytesUsedHelper(ptr->root, bytes);
+    return bytes;
+}
+
+void bytesUsedHelper(Level* ptr, unsigned int &bytes){
+    bytes += ptr->entryCount;
+    if(!ptr->isLeaf){
+        bytes += ptr->nextLevel.size();
+        for(int i = 0; i < ptr->table->numEntriesPerLevel[ptr->depth]; i++){
+            if(ptr->nextLevel[i]){
+                bytesUsedHelper(ptr->nextLevel[i], bytes);
+            }
+        }   
+    }
+    else{
+        bytes+=ptr->map.size();
+    }
+    return;
 }
 
 /*Generate number of bits to shift given address size, page size, and start

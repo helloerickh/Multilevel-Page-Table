@@ -1,10 +1,5 @@
 #include "Level.h"
 
-/*Default Level Constructor
-- does nothing
-- for dynamically allocating Level pointers to be set to null*/
-Level::Level(){}
-
 /*Level Constructor
 - initialize class members
 - if level is a leaf level, initialize vector of Map pointers
@@ -13,6 +8,7 @@ Level::Level(){}
 Level::Level(PageTable* table, int depth){
     this->table = table;
     this->depth = depth;
+    this->entryCount = 0;
     //check if leaf node
     if((depth + 1) >= table->levelCount){
         this->isLeaf = true;
@@ -58,6 +54,7 @@ void pageLevelInsert(Level* level, unsigned int address, int frame){
         level->map[pageIndex]->isValid = true;
         level->map[pageIndex]->frame = frame;
         level->table->frameCount++;
+        level->entryCount++;
     }
     //inner level
     else{
@@ -65,6 +62,7 @@ void pageLevelInsert(Level* level, unsigned int address, int frame){
         if(!(level->nextLevel[pageIndex])){
             //create new page, with appropriate arguments
             level->nextLevel[pageIndex] = new Level(level->table, (level->depth) + 1);
+            level->entryCount++;
         }
         //move to next page
         pageLevelInsert(level->nextLevel[pageIndex], address, frame);

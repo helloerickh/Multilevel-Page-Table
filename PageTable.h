@@ -15,7 +15,6 @@ class PageTable{
     int pageTableMiss;
     unsigned int offsetMask;
     unsigned int offsetSize;
-    unsigned int fullVPNMask;
 
     std::vector<unsigned int> bitmasks;
     std::vector<unsigned int> shiftInfo;
@@ -31,7 +30,8 @@ class PageTable{
     void printPageTable();
 };
 
-unsigned int virtualToPhysical();
+unsigned int bytesUsed(PageTable* ptr);
+void bytesUsedHelper(Level* ptr, unsigned int &bytes);
 
 unsigned int generateBitShift(unsigned int addressSize, unsigned int pageSize, int currBit);
 unsigned int generateBitMask(unsigned int length, unsigned int start);

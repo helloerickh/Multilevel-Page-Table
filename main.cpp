@@ -96,7 +96,34 @@ int main(int argc, char **argv)
 
 //DRIVER FOR SUMMARY MODE
 void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
-  return;
+  unsigned long i = 0;
+  p2AddrTr trace;
+  while(!feof(file)){
+    //enforce address processing max
+    if(nFlag){
+      if(i >= numAddr){
+        break;
+      }
+    }
+    if(NextAddress(file, &trace)){
+      //lookup address in PageTable, 
+      Map* map = ptr->pageTableLookup(trace.addr);
+      //check if address does not exist in PageTable
+      if(!map){
+        ptr->pageTableMiss++;
+        //insert address into PageTable
+        ptr->pageTableInsert(trace.addr);
+        //lookup newly inserted address
+        map = ptr->pageTableLookup(trace.addr);
+      }
+      else{
+        ptr->pageTableHit++;
+      }
+      //vector to hold pages
+      i++;
+    }
+  }
+  report_summary(1 << ptr->offsetSize, 0, ptr->pageTableHit, i, ptr->frameCount, bytesUsed(ptr));
 }
 
 //DRIVER FOR BITMASKS MODE, prints out bit masks 
@@ -121,11 +148,14 @@ void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCa
       Map* map = ptr->pageTableLookup(trace.addr);
     //check if address does not exist in PageTable
       if(!map){
-        //ptr->pageTableMiss++;
+        ptr->pageTableMiss++;
         //insert address into PageTable
         ptr->pageTableInsert(trace.addr);
       //lookup newly inserted address
         map = ptr->pageTableLookup(trace.addr);
+      }
+      else{
+        ptr->pageTableHit++;
       }
       //get offset bits of virtual address
       physicalAddress &= ptr->offsetMask;
@@ -160,11 +190,14 @@ void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool n
       Map* map = ptr->pageTableLookup(trace.addr);
       //check if address does not exist in PageTable
       if(!map){
-        //ptr->pageTableMiss++;
+        ptr->pageTableMiss++;
         //insert address into PageTable
         ptr->pageTableInsert(trace.addr);
         //lookup newly inserted address
         map = ptr->pageTableLookup(trace.addr);
+      }
+      else{
+        ptr->pageTableHit++;
       }
       //vector to hold pages
       std::vector<unsigned int> pageHolder;

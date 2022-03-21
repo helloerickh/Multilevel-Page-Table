@@ -9,13 +9,13 @@ class Level{
     public:
     bool isLeaf;
     int depth;
+    unsigned int entryCount;
     std::vector<class Level*> nextLevel;
     std::vector<class Map*> map;
 
     class PageTable* table;
 
     //CONSTRUCTOR
-    Level();
     Level(PageTable* table, int depth);
 };
 
