@@ -1,0 +1,57 @@
+FUNCTIONALITY
+1. Extract full Virtual Page Number (VPN)
+    Search Translation Lookaside Buffer (TLB) for VPN->Physical Frame Number (PFN)
+    IF MISS Search page tree
+
+2. IF VPN->PFN in TLB, use found PFN for Translation
+
+3. IF VPN->PFN NOT in TLB, walk the page table tree
+    IF in page table, insert mapping to TLB Cache
+        IF TLB full, apply cache replacement using Least Recently Used (LRU) policy
+    IF NOT in page table, insert page to page table tree with assigned frame index (index starts at 0 and continues sequentially) inserted page simulates demand paging allocation of a physical frame to virtual page brought into memory
+    ASSUME INFINITE NUMBER OF FRAMES, NO PAGE REPLACEMENT
+        after demanding page bring in page and inserts VPN->PFN mapping to table
+            insert mapping to TLB cache
+                IF TLB full, apply cache replacement
+
+4. FOR BOTH CASE 2 & 3, update or insert recently accessed pages into TLB
+
+5. IF mapping in TLB cache, increment cache hit counter
+    IF NOT in TLB cache aka MISS BUT in table tree, increment page table hit counter
+
+6. TLB cache hits + page table hits + page table misses = total # of address    accesses
+
+7. Print appropriate outputs to the standard output as specified in "User Interface"
+
+
+PageTable constructor [x]
+    - get bitmasks for each level [x]
+    - get bit shifts for each level [x]
+    - get number of entries per level [x]
+    - initialize framecounter, hit/miss counter, level count,
+        root level pointer [x]
+Level constructor [x]
+    - populate nextLevel vector [x]
+    - populate map vector [x]
+Map constructor [x]
+
+OUTPUT modes
+
+bitmasks [x]
+    - initialize page table structure
+    - get levelcount
+    - get pass address of first index (&vec[0])
+
+virtual2physical [x]
+
+v2p_tlb_pt
+
+vpn2pfn [x]
+
+summary [x]
+
+offset [x]
+    - initialize page table structure
+    - get sum of page size levels
+    - generate offset bit mask with length = sum, start = sum
+    - virtual address &= offset bitmask, create method
