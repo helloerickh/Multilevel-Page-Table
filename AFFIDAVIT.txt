@@ -1,7 +1,15 @@
-Single Programmer Affidavit
-I the undersigned promise that the submitted assignment is my own work. While I was 
-free to discuss ideas with others, the work contained is my own. I recognize that 
-should this not be the case; I will be subject to penalties as outlined in the course 
-syllabus. 
-Name: Erick Hernandez
-Red ID: 821321274
+Group Programming Equitable Participation 
+& Honesty Affidavit
+We the undersigned promise that we have in good faith attempted to follow the 
+principles of pair programming. Although we were free to discuss ideas with others, 
+the implementation is our own. Furthermore, any non-programming portions of the 
+assignment were done independently. We recognize that should this not be the case; 
+we will be subject to penalties as outlined in the course syllabus.
+
+Pair Programmer 1
+    Name: Erick Hernandez
+    Red ID: 821321274
+
+Pair Programmer 2
+    Name: Kavon Cacho
+    Red ID: 822794235

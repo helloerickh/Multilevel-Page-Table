@@ -1,5 +1,34 @@
 #include "TLB.h"
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+
+NAME: KAVON CACHO
+RED ID: 822794235
+*/
+
+TLB::TLB(std::vector<unsigned int> levelSizes, unsigned int cacheCap, unsigned int lruCap){
+    this->cacheCap = cacheCap;
+    this->currCacheCap = 0;
+    this->lruCap = lruCap;
+    this->currLRUCap = 0;
+    
+    //track size of VPN
+    unsigned int currVpnSize = 0;
+    //to avoid "magic number" when generating VPN bitshift
+    unsigned int vpnMSBPos = 0;
+    for(int i = 0; i < levelSizes.size(); i++){
+        currVpnSize += levelSizes[i];
+    }
+    this->vpnSize = currVpnSize;
+    this->vpnShift = generateBitShift(ADDRESS_SIZE, this->vpnSize, vpnMSBPos);
+    this->vpnMask = generateBitMask(this->vpnSize, ADDRESS_SIZE);
+
+    this->tlbHit = 0;
+    this->tlbMiss = 0;
+
+}
 unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime){
     unsigned int PFN;
     //TODO Extract VPN
@@ -48,6 +77,10 @@ unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime)
         }
     }
     return PFN;
+}
+
+unsigned int TLB::lruReplacementPolicy(unsigned int VPN, unsigned int long currTime){
+    
 }
 
 void TLB::tlbInsert(unsigned int virtualAddress, unsigned int frame, unsigned long currTime){

@@ -1,12 +1,6 @@
 #include <stdio.h>
 #include "tracereader.h"
 
-
-/*
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-*/
-
 /*
  * If you are using this program on a big-endian machine (something
  * other than an Intel PC or equivalent) the unsigned longs will need

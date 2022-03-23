@@ -6,7 +6,13 @@
 #include <vector>           //vector
 #include <map>    //unordered map
 
-#define LRU_SIZE 10
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+
+NAME: KAVON CACHO
+RED ID: 822794235
+*/
 
 /*
 TODO:
@@ -19,11 +25,11 @@ class TLB{
     public:
     unsigned int cacheCap;
     unsigned int currCacheCap;
+    unsigned int lruCap;
     unsigned int currLRUCap;
 
-
-    unsigned int offsetSize;
     unsigned int vpnSize;
+    unsigned int vpnShift;
     unsigned int vpnMask;
     unsigned int tlbHit;
     unsigned int tlbMiss;
@@ -38,7 +44,7 @@ class TLB{
     unsigned int lruReplacementPolicy(unsigned int VPN, unsigned long currTime);
 
 
-    TLB();
+    TLB(std::vector<unsigned int> levelSizes, unsigned int cacheCap, unsigned int lruCap);
 
 };
 

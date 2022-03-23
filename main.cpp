@@ -6,6 +6,7 @@
 #include <string.h> //strcmp
 
 #include "PageTable.h"
+#include "TLB.h"
 #include "helpers.h"
 #include "tracereader.h"
 #include "output_mode_helpers.h"
@@ -15,6 +16,9 @@ CS 480 Operating Systems Assignment #3
 
 NAME: ERICK HERNANDEZ
 RED ID: 821321274
+
+NAME: KAVON CACHO
+RED ID: 822794235
 
 SYNOPSIS:
 This assignment intends to simulate virtual address to physical address access of a program. 
@@ -28,23 +32,6 @@ REFERENCES
 Generate Bit Mask
 https://stackoverflow.com/questions/1392059/algorithm-to-generate-bit-mask
 */
-
-//DEFAULT VALUES
-#define DEFAULT_CACHE_CAP 0
-#define DEFAULT_MODE 0
-/*DEFAULT_NUM_ADDR is ALL ADDRESSES
-  N addresses processed if nFlag TRUE, otherwise ALL ADDRESSES*/
-
-//MODE MACROS
-#define SUMMARY 0
-#define BITMASKS 1
-#define VIRTUAL2PHYSICAL 2
-#define V2P_TLB_PT 3
-#define VPN2PFN 4
-#define OFFSET 5
-
-//MAX VPN BITS
-#define MAXTOTALNUMBITS 28
 
 //DRIVERS FOR MODES
 void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
@@ -74,9 +61,12 @@ int main(int argc, char **argv)
   std::vector<unsigned int>* levelBits = new std::vector<unsigned int>;
   //get arguments
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
-  //initialize PageTable
+  //INTITIALIZE PageTable
   PageTable* bruh = new PageTable(*levelBits);
-  //cleanup
+  //INITIALIZE TLB
+  TLB* soup = new TLB(*levelBits, cacheCap, LRU_SIZE);
+  
+  //cleanup level bit vector
   delete(levelBits);
 
   FILE *ifp;
@@ -101,14 +91,20 @@ int main(int argc, char **argv)
     offsetDriver(bruh, ifp, numAddr, nFlag);
   }
 
-  //CLEANUP
+  //FILE CLEANUP
   fclose(ifp);
+  //PAGE TABLE CLEANUP
   bruh->bitmasks.clear();
   bruh->shiftInfo.clear();
   bruh->numEntriesPerLevel.clear();
   delete(bruh->root);
   delete(bruh);
-  return (0);
+  //TLB CLEANUP
+  soup->cache.clear();
+  soup->LRU.clear();
+  delete(soup);
+
+  return 0;
 }
 
 //DRIVER FOR SUMMARY MODE
