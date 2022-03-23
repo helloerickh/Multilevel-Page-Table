@@ -100,7 +100,6 @@ int main(int argc, char **argv)
   else{
     offsetDriver(bruh, ifp, numAddr, nFlag);
   }
-  //bruh->printPageTable();
 
   //CLEANUP
   fclose(ifp);
@@ -128,33 +127,14 @@ void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool n
       unsigned int frame;
       //flag if VPN in TLB
       bool cacheHit = false;
-      //check if TLB is used
-      if(cacheCap){
-        //TODO TLB LOOKUP
-
-      }
-      //if VPN not in TLB
-      if(!cacheHit){
-        Map* map;
-        //check if VPN in PageTable
-        if(!(map = ptr->pageTableLookup(trace.addr))){
-          ptr->pageTableMiss++;
-          //insert VPN into PageTable
-          ptr->pageTableInsert(trace.addr);
-          //get PFN of newly inserted VPN
-          frame = (ptr->pageTableLookup(trace.addr))->frame;
-        }
-        else{
-          //VPN found
-          ptr->pageTableHit++;
-          //get PFN of VPN
-          frame = map->frame;
-          //TODO INSERT VPN TO TLB
-        }
-      }
+      //flag if VPN in PageTable
+      bool pageTableHit = false;
+      //access virtual address using TLB and PageTable
+      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      i++;
     }
-    i++;
   }
+  //TODO REPLACE ZERO WITH TLB HIT
   report_summary(1 << ptr->offsetSize, 0, ptr->pageTableHit, i, ptr->frameCount, bytesUsed(ptr));
 }
 
@@ -180,41 +160,26 @@ void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCa
       unsigned int frame;
       //flag if VPN in TLB
       bool cacheHit = false;
-      //check if TLB is used
-      if(cacheCap){
-        //TODO TLB LOOKUP
-        //TODO SET CACHEHIT TO TRUE IF VPN IN TLB
+      //flag if VPN in PageTable
+      bool pageTableHit = false;
 
-      }
-      //if VPN not in TLB
-      if(!cacheHit){
-        Map* map;
-        //check if VPN in PageTable
-        if(!(map = ptr->pageTableLookup(trace.addr))){
-          ptr->pageTableMiss++;
-          //insert VPN into PageTable
-          ptr->pageTableInsert(trace.addr);
-          //get PFN of newly inserted VPN
-          frame = (ptr->pageTableLookup(trace.addr))->frame;
-        }
-        else{
-          //VPN found
-          ptr->pageTableHit++;
-          //get PFN of VPN
-          frame = map->frame;
-          //TODO INSERT VPN TO TLB
-        }
-      }
+      //access virtual address using TLB and PageTable
+      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      
+      //get physical address
       physicalAddress = getPhysicalAddress(getOffset(trace.addr, ptr->offsetMask), ptr->offsetSize, frame);
+
       report_virtual2physical(trace.addr, physicalAddress);
+      i++;
     }
-    i++;
   }
 }
 
 //DRIVER FOR V2P_TLB_PT MODE, prints virtual address -> physical address 
 //includes hit or miss information for TLB and PageTable 
 void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+  //TODO REMOVE WHEN FINISHED TLB
+  return;
   unsigned long i = 0;
   p2AddrTr trace;
   while(!feof(file)){
@@ -231,34 +196,13 @@ void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, boo
       //flag if VPN in TLB
       bool cacheHit = false;
       //flag if VPN in PageTable
-      bool pageHit = false;
-      if(cacheCap){
-        //TODO TLB LOOKUP
-        //TODO SET CACHEHIT TO TRUE IF VPN IN TLB
+      bool pageTableHit = false;
 
-      }
-      //if VPN not in TLB
-      if(!cacheHit){
-        Map* map;
-        //check if VPN in PageTable
-        if(!(map = ptr->pageTableLookup(trace.addr))){
-          ptr->pageTableMiss++;
-          //insert VPN into PageTable
-          ptr->pageTableInsert(trace.addr);
-          //get PFN of newly inserted VPN
-          frame = (ptr->pageTableLookup(trace.addr))->frame;
-        }
-        else{
-          //VPN found
-          ptr->pageTableHit++;
-          //get PFN of VPN
-          frame = map->frame;
-          //TODO INSERT VPN TO TLB
-        }
-      }
+      //access virtual address using TLB and PageTable
+      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      i++;
     }
   }
-  return;
 }
 
 //DRIVER FOR VPN2PFN MODE, prints vpn -> pfn
@@ -277,39 +221,20 @@ void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool n
       unsigned int frame;
       //flag if VPN in TLB
       bool cacheHit = false;
-      //check if TLB is used
-      if(cacheCap){
-        //TODO TLB LOOKUP
-        //TODO SET CACHEHIT TO TRUE IF VPN IN TLB
+      //flag if VPN in PageTable
+      bool pageTableHit = false;
 
-      }
-      //if VPN not in TLB
-      if(!cacheHit){
-        Map* map;
-        //check if VPN in PageTable
-        if(!(map = ptr->pageTableLookup(trace.addr))){
-          ptr->pageTableMiss++;
-          //insert VPN into PageTable
-          ptr->pageTableInsert(trace.addr);
-          //getPFN of newly inserted VPN
-          frame = (ptr->pageTableLookup(trace.addr))->frame;
-        }
-        else{
-          //VPN found
-          ptr->pageTableHit++;
-          //get PFN of VPN
-          frame = map->frame;
-          //TODO INSERT VPN TO TLB
-        }
-      }
+      //access virtual address using TLB and PageTable
+      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+
       //vector to hold pages
       std::vector<unsigned int> pageHolder;
       for(int i = 0; i < ptr->levelCount; i++){
         pageHolder.push_back(virtualAddressToPageNum(trace.addr, ptr->bitmasks[i], ptr->shiftInfo[i]));
       }
       report_pagemap(ptr->levelCount, &pageHolder[0], frame);
+      i++;
     }
-    i++;
   }
 }
 
@@ -326,6 +251,7 @@ void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag){
     if(NextAddress(file, &trace)){
       hexnum(getOffset(trace.addr, ptr->offsetMask));
     }
+    i++;
   }
 }
 
@@ -461,11 +387,12 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
 }
 
 void memoryAccess(PageTable* ptrPT, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit, int cacheCap){
+  //check if TLB is used
   if(cacheCap){
     //TODO TLB LOOKUP
     //TODO SET CACHEHIT TO TRUE IF VPN IN TLB
   }
-  //if VPN not in TLB
+  //if VPN not in TLB or TLB not used
   if(!cacheHit){
     Map* map;
     //check if VPN in PageTable

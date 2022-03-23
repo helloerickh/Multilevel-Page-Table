@@ -37,20 +37,20 @@ Map constructor [x]
 
 OUTPUT modes
 
-bitmasks
+bitmasks [x]
     - initialize page table structure
     - get levelcount
     - get pass address of first index (&vec[0])
 
-virtual2physical
+virtual2physical [x]
 
 v2p_tlb_pt
 
-vpn2pfn
+vpn2pfn [x]
 
-summary
+summary [x]
 
-offset
+offset [x]
     - initialize page table structure
     - get sum of page size levels
     - generate offset bit mask with length = sum, start = sum
