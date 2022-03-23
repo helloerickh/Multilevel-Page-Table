@@ -99,15 +99,3 @@ Map* pageLevelLookup(Level* level, unsigned int address){
         pageLevelLookup(level->nextLevel[pageIndex], address);
     }
 }
-
-/*Calculate Page Number
-INPUT: unsigned int virtual address, bit mask, number of bits to shift
-RETURN: unsigned int isolated page number
-- applies bit wise & to virtual address to isolate page number
-- shift this page number shift number of bits to the right*/
-unsigned int virtualAddressToPageNum(unsigned int virtualAddress, unsigned int mask, unsigned int shift){
-    unsigned int page = virtualAddress;
-    page &= mask;
-    page >>= shift;
-    return page;
-}

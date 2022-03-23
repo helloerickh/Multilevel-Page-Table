@@ -3,6 +3,7 @@
 
 #include "PageTable.h"
 #include "Map.h"
+#include "helpers.h"
 #include <vector>
 
 /*

@@ -3,10 +3,8 @@
 
 #include "Level.h"
 #include "Map.h"    //return type of pagelookup
+#include "helpers.h"
 #include <vector>
-
-//for this assignment we assume 32 bit addresses
-#define ADDRESS_SIZE 32
 
 /*
 NAME: ERICK HERNANDEZ
@@ -51,9 +49,6 @@ class PageTable{
 //ADDITIONAL METHODS
 unsigned int bytesUsed(PageTable* ptr);
 void bytesUsedHelper(Level* ptr, unsigned int &bytes);
-
-unsigned int generateBitShift(unsigned int addressSize, unsigned int pageSize, int currBit);
-unsigned int generateBitMask(unsigned int length, unsigned int start);
 
 #endif
 

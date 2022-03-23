@@ -48,15 +48,6 @@ Map* PageTable::pageTableLookup(unsigned int address){
     return pageLevelLookup(this->root, address);
 }
 
-/*Get offset of a virtual address
-INPUT: unsigned int virtual address
-RETURN: offset bits*/
-unsigned int PageTable::getOffset(unsigned int address){
-    unsigned int offset = address;
-    offset &= this->offsetMask;
-    return offset;
-}
-
 /*Print out Page Table class members*/
 void PageTable::printPageTable(){
     printf("LEVELCOUNT: %d FRAMECOUNT: %d TABLEHIT: %d TABLEMISS: %d \n", this->levelCount, this->frameCount, this->pageTableHit, this->pageTableMiss);
@@ -111,28 +102,4 @@ void bytesUsedHelper(Level* ptr, unsigned int &bytes){
         bytes+= sizeof(ptr->map) * ptr->map.size();
     }
     return;
-}
-
-/*Generate number of bits to shift given address size, page size, and start
-INPUT: unsigned int address size and page size, int current bit
-RETURN: unsigned int bit shift
-- Bit shift represents number of bits to shift page number to the right
-- Bit shifted page number is used to traverse page table*/
-unsigned int generateBitShift(unsigned int addressSize, unsigned int pageSize, int currBit){
-    //calculate how many bits to shift over depending on how many bits there are and where they begin
-    unsigned int bitShift = addressSize - currBit - pageSize;
-    return bitShift;
-}
-
-/*Generate a bitmask given the length of the mask and where the mask begins
-INPUT: unsigned int length of bitmask, unsigned int start of MSB side of bit mask
-RETURN: unsigned int bit mask
-- Bit mask is used to isolate page numbers for level
-- start = length, results in zero shift, good for offset mask*/
-unsigned int generateBitMask(unsigned int length, unsigned int start){
-    //intitialize length number of 1s from MSB side
-    unsigned int bitMask = (1 << length) - 1;
-    //shift 1s to start bit
-    bitMask <<= (start - length);
-    return bitMask;
 }
