@@ -25,7 +25,6 @@ TLB::TLB(std::vector<unsigned int> levelSizes, unsigned int cacheCap, unsigned i
         //cache bigger than lru, lru size set to max lru size
         this->lruCap = MAX_LRU_SIZE;
     }
-    this->lruCap = lruCap;
     this->currLRUCap = 0;
     
     //track size of VPN
@@ -45,14 +44,14 @@ TLB::TLB(std::vector<unsigned int> levelSizes, unsigned int cacheCap, unsigned i
     this->tlbMiss = 0;
 
 }
-unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime){
+unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime, bool& vpnFoundTLB){
     //hold PFN
     unsigned int PFN;
     //Extract VPN
     unsigned VPN = virtualAddressToPageNum(virtualAddress, this->vpnMask, this->vpnShift);
 
     //iterate through map to find VPN
-    std::map<unsigned int, unsigned int>::iterator it = this->cache.find(virtualAddress);
+    std::map<unsigned int, unsigned int>::iterator it = this->cache.find(VPN);
 
     //check if VPN is in cache
     if(it == this->cache.end()){
@@ -63,6 +62,7 @@ unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime)
     //VPN in cache, get PFN
     PFN = it->second;
     this->tlbHit++;
+    vpnFoundTLB = true;
 
     //flag true if VPN in LRU
     bool lruFlag = false;
@@ -129,7 +129,7 @@ void TLB::tlbInsert(unsigned int virtualAddress, unsigned int frame, unsigned lo
     //Is cache full?
     if(this->currCacheCap >= this->cacheCap){
         //yes, full cache
-        unsigned int vpnToRemove = lruReplacementPolicy(virtualAddress, currTime);
+        unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
         //remove return of replacement from cache
         this->cache.erase(vpnToRemove);
         //insert new mapping to cache
@@ -138,11 +138,12 @@ void TLB::tlbInsert(unsigned int virtualAddress, unsigned int frame, unsigned lo
     else{
         //no, cache not full
         this->cache.insert({VPN, frame});
+        this->currCacheCap++;
         //check if lru full
         if(this->currLRUCap >= this->lruCap){
             //yes, LRU full
             //don't do anything with vpnToRemove because cache is not full
-            unsigned int vpnToRemove = lruReplacementPolicy(virtualAddress, currTime);
+            unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
         }
         else{
             //no, LRU not full

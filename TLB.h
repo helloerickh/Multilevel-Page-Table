@@ -38,7 +38,7 @@ class TLB{
     std::map<unsigned int, unsigned int> cache;
     std::vector<std::pair<unsigned int, unsigned int>> LRU;
 
-    unsigned int tlbLookup(unsigned int virtualAddress, unsigned long currTime);
+    unsigned int tlbLookup(unsigned int virtualAddress, unsigned long currTime, bool& vpnFoundTLB);
 
     void tlbInsert(unsigned int virtualAddress, unsigned int frame ,unsigned long currTime);
 
