@@ -64,7 +64,7 @@ int main(int argc, char **argv)
   //INTITIALIZE PageTable
   PageTable* bruh = new PageTable(*levelBits);
   //INITIALIZE TLB
-  TLB* soup = new TLB(*levelBits, cacheCap, LRU_SIZE);
+  TLB* soup = new TLB(*levelBits, cacheCap, MAX_LRU_SIZE);
   
   //cleanup level bit vector
   delete(levelBits);

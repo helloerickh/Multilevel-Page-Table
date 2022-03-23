@@ -5,7 +5,7 @@ NAME: ERICK HERNANDEZ
 RED ID: 821321274
 
 NAME: KAVON CACHO
-RED ID: 822794235
+RED ID: 822794135
 */
 
 /*TLB Constructor
@@ -90,23 +90,64 @@ unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime)
         //LRU is full
         else{
             //get least recently used VPN and replace it with new VPN
+            // unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
+            // //remove LRU VPN from cache
+            // this->cache.erase(vpnToRemove);
+            // //decrement current cache capacity
+            // this->currCacheCap--;
+
+            //run LRU replacement, does not use vpnToRemove because we are not inserting anything to the cache
             unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
-            //remove LRU VPN from cache
-            this->cache.erase(vpnToRemove);
-            //decrement current cache capacity
-            this->currCacheCap--;
         }
     }
     return PFN;
 }
 
-unsigned int TLB::lruReplacementPolicy(unsigned int VPN, unsigned int long currTime){
 
+unsigned int TLB::lruReplacementPolicy(unsigned int VPN, unsigned int long currTime){
+    //sort LRU in decreasing order of access time
+    sort(this->LRU.begin(), this->LRU.end(), sortBySecond);
+    //get frame to be removed
+    unsigned int pfnToRemove = this->LRU.back().first; 
+    //remove VPN with lowest access time
+    this->LRU.pop_back();
+    //insert new VPN, access time pair
+    this->LRU.push_back(std::make_pair(VPN, currTime));
+    return pfnToRemove;
 }
 
+bool sortBySecond(const std::pair<unsigned int, unsigned int>& x, const std::pair<unsigned int, unsigned int>& y){
+    return (x.second > y.second);
+}
+
+
 void TLB::tlbInsert(unsigned int virtualAddress, unsigned int frame, unsigned long currTime){
-    //TODO Extract VPN
-    unsigned int VPN = 0;
 
+    //Extract VPN
+    unsigned int VPN = virtualAddressToPageNum(virtualAddress, this->vpnMask, this->vpnShift);
 
+    //Is cache full?
+    if(this->currCacheCap >= this->cacheCap){
+        //yes, full cache
+        unsigned int vpnToRemove = lruReplacementPolicy(virtualAddress, currTime);
+        //remove return of replacement from cache
+        this->cache.erase(vpnToRemove);
+        //insert new mapping to cache
+        this->cache.insert({VPN, frame});
+    }
+    else{
+        //no, cache not full
+        this->cache.insert({VPN, frame});
+        //check if lru full
+        if(this->currLRUCap >= this->lruCap){
+            //yes, LRU full
+            //don't do anything with vpnToRemove because cache is not full
+            unsigned int vpnToRemove = lruReplacementPolicy(virtualAddress, currTime);
+        }
+        else{
+            //no, LRU not full
+            this->LRU.push_back(std::make_pair(VPN, currTime));
+            this->currLRUCap++;
+        }
+    }
 }
