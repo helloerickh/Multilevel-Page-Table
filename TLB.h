@@ -49,6 +49,8 @@ class TLB{
 
 };
 
+bool sortBySecond(const std::pair<unsigned int, unsigned int>& x, const std::pair<unsigned int, unsigned int>& y);
+
 
 
 #endif
