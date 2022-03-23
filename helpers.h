@@ -13,7 +13,7 @@ RED ID: 822794235
 #define ADDRESS_SIZE 32
 
 //number of addresses to track in TLB
-#define LRU_SIZE 10
+#define MAX_LRU_SIZE 10
 
 //DEFAULT VALUES
 #define DEFAULT_CACHE_CAP 0
