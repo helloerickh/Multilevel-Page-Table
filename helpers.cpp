@@ -1,5 +1,10 @@
 #include "helpers.h"
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+*/
+
 /*Calculate Page Number
 INPUT: unsigned int virtual address, bit mask, number of bits to shift
 RETURN: unsigned int isolated page number

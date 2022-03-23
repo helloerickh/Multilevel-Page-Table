@@ -255,6 +255,7 @@ void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag){
   }
 }
 
+//process arguments
 void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx){
   /*flags to check presence of option and throw error for more than 1
     of same option*/
@@ -386,6 +387,7 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
 
 }
 
+//function to run through TLB and PageTable access
 void memoryAccess(PageTable* ptrPT, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit, int cacheCap){
   //check if TLB is used
   if(cacheCap){

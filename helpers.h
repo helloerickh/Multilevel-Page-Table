@@ -1,6 +1,11 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+/*
+NAME: ERICK HERNANDEZ
+RED ID: 821321274
+*/
+
 #define ADDRESS_SIZE 32
 
 unsigned int virtualAddressToPageNum(unsigned int virtualAddress, unsigned int mask, unsigned int bitshift);
