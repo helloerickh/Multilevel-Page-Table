@@ -6,6 +6,7 @@
 #include <string.h> //strcmp
 
 #include "PageTable.h"
+#include "TLB.h"
 #include "helpers.h"
 #include "tracereader.h"
 #include "output_mode_helpers.h"
@@ -15,6 +16,9 @@ CS 480 Operating Systems Assignment #3
 
 NAME: ERICK HERNANDEZ
 RED ID: 821321274
+
+NAME: KAVON CACHO
+RED ID: 822794135
 
 SYNOPSIS:
 This assignment intends to simulate virtual address to physical address access of a program. 
@@ -29,35 +33,18 @@ Generate Bit Mask
 https://stackoverflow.com/questions/1392059/algorithm-to-generate-bit-mask
 */
 
-//DEFAULT VALUES
-#define DEFAULT_CACHE_CAP 0
-#define DEFAULT_MODE 0
-/*DEFAULT_NUM_ADDR is ALL ADDRESSES
-  N addresses processed if nFlag TRUE, otherwise ALL ADDRESSES*/
-
-//MODE MACROS
-#define SUMMARY 0
-#define BITMASKS 1
-#define VIRTUAL2PHYSICAL 2
-#define V2P_TLB_PT 3
-#define VPN2PFN 4
-#define OFFSET 5
-
-//MAX VPN BITS
-#define MAXTOTALNUMBITS 28
-
 //DRIVERS FOR MODES
-void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
-void bitmasksDriver(PageTable* ptr);
-void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
-void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
-void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void summaryDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void bitmasksDriver(PageTable* ptrPT);
+void virtual2physicalDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void v2p_tlb_ptDriver(PageTable* ptr, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag);
+void vpn2pfnDriver(PageTable* ptr, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag);
 void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag);
 
 //GET ARGUMENTS
 void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx);
 //PROCESS ADDRESS
-void memoryAccess(PageTable* ptrPT, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit ,int cacheCap);
+void memoryAccess(PageTable* ptrPT, TLB* ptrTLB, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit ,int cacheCap, unsigned int long currTime);
 
 int main(int argc, char **argv)
 {
@@ -74,45 +61,54 @@ int main(int argc, char **argv)
   std::vector<unsigned int>* levelBits = new std::vector<unsigned int>;
   //get arguments
   getArguments(argc, argv, numAddr, nFlag, cacheCap, mode, levelBits, pathIdx);
-  //initialize PageTable
+  //INTITIALIZE PageTable
   PageTable* bruh = new PageTable(*levelBits);
-  //cleanup
+  //INITIALIZE TLB
+  TLB* soup = new TLB(*levelBits, cacheCap, MAX_LRU_SIZE);
+  
+  //cleanup level bit vector
   delete(levelBits);
 
   FILE *ifp;
   ifp = fopen(argv[pathIdx], "rb");
   //OUTPUT CONTROL
   if(mode == SUMMARY){
-    summaryDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+    summaryDriver(bruh, soup, ifp, numAddr, cacheCap, nFlag);
   }
   else if(mode == BITMASKS){
     bitmasksDriver(bruh);
   }
   else if(mode == VIRTUAL2PHYSICAL){
-    virtual2physicalDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+    virtual2physicalDriver(bruh, soup, ifp, numAddr, cacheCap, nFlag);
   }
   else if(mode == V2P_TLB_PT){
-    v2p_tlb_ptDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+    v2p_tlb_ptDriver(bruh, soup, ifp, numAddr, cacheCap, nFlag);
   }
   else if(mode == VPN2PFN){
-    vpn2pfnDriver(bruh, ifp, numAddr, cacheCap, nFlag);
+    vpn2pfnDriver(bruh, soup, ifp, numAddr, cacheCap, nFlag);
   }
   else{
     offsetDriver(bruh, ifp, numAddr, nFlag);
   }
 
-  //CLEANUP
+  //FILE CLEANUP
   fclose(ifp);
+  //PAGE TABLE CLEANUP
   bruh->bitmasks.clear();
   bruh->shiftInfo.clear();
   bruh->numEntriesPerLevel.clear();
   delete(bruh->root);
   delete(bruh);
-  return (0);
+  //TLB CLEANUP
+  soup->cache.clear();
+  soup->LRU.clear();
+  delete(soup);
+
+  return 0;
 }
 
 //DRIVER FOR SUMMARY MODE
-void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+void summaryDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag){
   unsigned long i = 0;
   p2AddrTr trace;
   while(!feof(file)){
@@ -130,21 +126,21 @@ void summaryDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool n
       //flag if VPN in PageTable
       bool pageTableHit = false;
       //access virtual address using TLB and PageTable
-      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      memoryAccess(ptrPT, ptrTLB, trace.addr, frame, cacheHit, pageTableHit, cacheCap, i);
       i++;
     }
   }
   //TODO REPLACE ZERO WITH TLB HIT
-  report_summary(1 << ptr->offsetSize, 0, ptr->pageTableHit, i, ptr->frameCount, bytesUsed(ptr));
+  report_summary(1 << ptrPT->offsetSize, ptrTLB->tlbHit, ptrPT->pageTableHit, i, ptrPT->frameCount, bytesUsed(ptrPT));
 }
 
 //DRIVER FOR BITMASKS MODE, prints out bit masks 
-void bitmasksDriver(PageTable* ptr){
-  report_bitmasks(ptr->levelCount, &(ptr->bitmasks[0]));
+void bitmasksDriver(PageTable* ptrPT){
+  report_bitmasks(ptrPT->levelCount, &(ptrPT->bitmasks[0]));
 }
 
 //DRIVER FOR VIRTUAL2PHYSICAL, prints out virtual address -> physical address
-void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+void virtual2physicalDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag){
   unsigned long  i = 0;
   p2AddrTr trace;
   while(!feof(file)){
@@ -164,10 +160,10 @@ void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCa
       bool pageTableHit = false;
 
       //access virtual address using TLB and PageTable
-      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      memoryAccess(ptrPT, ptrTLB, trace.addr, frame, cacheHit, pageTableHit, cacheCap, i);
       
       //get physical address
-      physicalAddress = getPhysicalAddress(getOffset(trace.addr, ptr->offsetMask), ptr->offsetSize, frame);
+      physicalAddress = getPhysicalAddress(getOffset(trace.addr, ptrPT->offsetMask), ptrPT->offsetSize, frame);
 
       report_virtual2physical(trace.addr, physicalAddress);
       i++;
@@ -177,9 +173,9 @@ void virtual2physicalDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCa
 
 //DRIVER FOR V2P_TLB_PT MODE, prints virtual address -> physical address 
 //includes hit or miss information for TLB and PageTable 
-void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+void v2p_tlb_ptDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag){
   //TODO REMOVE WHEN FINISHED TLB
-  return;
+  //return;
   unsigned long i = 0;
   p2AddrTr trace;
   while(!feof(file)){
@@ -199,14 +195,20 @@ void v2p_tlb_ptDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, boo
       bool pageTableHit = false;
 
       //access virtual address using TLB and PageTable
-      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      memoryAccess(ptrPT, ptrTLB, trace.addr, frame, cacheHit, pageTableHit, cacheCap, i);
+
+      //get physical address
+      physicalAddress = getPhysicalAddress(getOffset(trace.addr, ptrPT->offsetMask), ptrPT->offsetSize, frame);
+
+      report_v2pUsingTLB_PTwalk(trace.addr, physicalAddress, cacheHit, pageTableHit);
+
       i++;
     }
   }
 }
 
 //DRIVER FOR VPN2PFN MODE, prints vpn -> pfn
-void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool nFlag){
+void vpn2pfnDriver(PageTable* ptrPT, TLB* ptrTLB, FILE* file, int numAddr, int cacheCap, bool nFlag){
   unsigned long  i = 0;
   p2AddrTr trace;
   while(!feof(file)){
@@ -225,14 +227,14 @@ void vpn2pfnDriver(PageTable* ptr, FILE* file, int numAddr, int cacheCap, bool n
       bool pageTableHit = false;
 
       //access virtual address using TLB and PageTable
-      memoryAccess(ptr, trace.addr, frame, cacheHit, pageTableHit, cacheCap);
+      memoryAccess(ptrPT, ptrTLB, trace.addr, frame, cacheHit, pageTableHit, cacheCap, i);
 
       //vector to hold pages
       std::vector<unsigned int> pageHolder;
-      for(int i = 0; i < ptr->levelCount; i++){
-        pageHolder.push_back(virtualAddressToPageNum(trace.addr, ptr->bitmasks[i], ptr->shiftInfo[i]));
+      for(int i = 0; i < ptrPT->levelCount; i++){
+        pageHolder.push_back(virtualAddressToPageNum(trace.addr, ptrPT->bitmasks[i], ptrPT->shiftInfo[i]));
       }
-      report_pagemap(ptr->levelCount, &pageHolder[0], frame);
+      report_pagemap(ptrPT->levelCount, &pageHolder[0], frame);
       i++;
     }
   }
@@ -255,6 +257,7 @@ void offsetDriver(PageTable* ptr, FILE* file, int numAddr, bool nFlag){
   }
 }
 
+//process arguments
 void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheCap, int& mode, std::vector<unsigned int>* levelBits, int& pathIdx){
   /*flags to check presence of option and throw error for more than 1
     of same option*/
@@ -300,15 +303,15 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
         break;
       case 'n':
         if(nFlag){
-          printf("ERROR: Multiple -p options\n");
+          printf("ERROR: Multiple -n options\n");
           exit(EXIT_FAILURE);
         }
         else if(!isdigit(*optarg)){
-          printf("ERROR: -p expects integer\n");
+          printf("ERROR: -n expects integer\n");
           exit(EXIT_FAILURE);
         }
         else if(atoi(optarg) < 0){
-          printf("ERROR: -o argument must be >= 0");
+          printf("ERROR: -n argument must be >= 0");
           exit(EXIT_FAILURE);
         }
         else{
@@ -386,11 +389,18 @@ void getArguments(int argc, char* argv[], int& numAddr, bool& nFlag, int& cacheC
 
 }
 
-void memoryAccess(PageTable* ptrPT, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit, int cacheCap){
-  //check if TLB is used
+//function to run through TLB and PageTable access
+void memoryAccess(PageTable* ptrPT, TLB* ptrTLB, unsigned int virtualAddress, unsigned int& frame, bool& cacheHit, bool& pageTableHit, int cacheCap, unsigned long currTime){
+  //Is TLB used?
   if(cacheCap){
-    //TODO TLB LOOKUP
-    //TODO SET CACHEHIT TO TRUE IF VPN IN TLB
+    //flag if VPN found
+    bool vpnFoundTLB = false;
+    //TLB used, TLB lookup
+    frame = ptrTLB->tlbLookup(virtualAddress, currTime, vpnFoundTLB);
+    if(vpnFoundTLB){
+      //vpn found in TLB
+      cacheHit = true;
+    }
   }
   //if VPN not in TLB or TLB not used
   if(!cacheHit){
@@ -402,13 +412,23 @@ void memoryAccess(PageTable* ptrPT, unsigned int virtualAddress, unsigned int& f
       ptrPT->pageTableInsert(virtualAddress);
       //get PFN of newly inserted VPN
       frame = (ptrPT->pageTableLookup(virtualAddress))->frame;
+      //Is TLB used?
+      if(cacheCap){
+        //TLB used, insert VPN to TLB
+        ptrTLB->tlbInsert(virtualAddress, frame, currTime);
+      }
     }
     else{
       //VPN found
       ptrPT->pageTableHit++;
+      pageTableHit = true;
       //get PFN of VPN
       frame = map->frame;
-      //TODO INSERT VPN TO TLB
+      //Is TLB used?
+      if(cacheCap){
+        //TLB used, insert VPN to TLB
+        ptrTLB->tlbInsert(virtualAddress, frame, currTime);
+      }
     }
   }
 }
