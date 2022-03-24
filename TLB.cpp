@@ -44,6 +44,12 @@ TLB::TLB(std::vector<unsigned int> levelSizes, unsigned int cacheCap, unsigned i
     this->tlbMiss = 0;
 
 }
+
+/* Lookup the TLB for a Virtual Page Number
+INPUT: unsigned int virtual address, unsigned long current time, bool vpnFoundTLB
+RETURN: unsigned int page frame number
+currTime = number of addresses that has been processed up until now
+vpnFoundTLB = if the VPN is found in the TLB, defaulted to false, passed by reference*/
 unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime, bool& vpnFoundTLB){
     //hold PFN
     unsigned int PFN;
@@ -89,13 +95,6 @@ unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime,
         }
         //LRU is full
         else{
-            //get least recently used VPN and replace it with new VPN
-            // unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
-            // //remove LRU VPN from cache
-            // this->cache.erase(vpnToRemove);
-            // //decrement current cache capacity
-            // this->currCacheCap--;
-
             //run LRU replacement, does not use vpnToRemove because we are not inserting anything to the cache
             unsigned int vpnToRemove = lruReplacementPolicy(VPN, currTime);
         }
@@ -103,7 +102,10 @@ unsigned int TLB::tlbLookup(unsigned int virtualAddress, unsigned long currTime,
     return PFN;
 }
 
-
+/*lruReplacementPolicy handles the manipulation of the LRU vector
+INPUT: unsigned int virtual page number, unsigned long current time
+RETURN: the PFN of the VPN we want to remove from the TLB
+- Sort the vector, remove the last element, insert the new one, return*/
 unsigned int TLB::lruReplacementPolicy(unsigned int VPN, unsigned int long currTime){
     //sort LRU in decreasing order of access time
     sort(this->LRU.begin(), this->LRU.end(), sortBySecond);
@@ -116,11 +118,16 @@ unsigned int TLB::lruReplacementPolicy(unsigned int VPN, unsigned int long currT
     return pfnToRemove;
 }
 
+/*Helper method for sorting the LRU based on acccess time
+INPUT: start of vector, end of vector*/
 bool sortBySecond(const std::pair<unsigned int, unsigned int>& x, const std::pair<unsigned int, unsigned int>& y){
     return (x.second > y.second);
 }
 
-
+/*Insert virtual addresses into the TLB
+INPUT: unsigned int virtual address, unsigned int frame number, unsigned int current time
+- Based on whether the TLB is full, insert into it or use the lruReplacement policy to figure out
+which one to remove*/
 void TLB::tlbInsert(unsigned int virtualAddress, unsigned int frame, unsigned long currTime){
 
     //Extract VPN
