@@ -6,11 +6,6 @@
 #include "helpers.h"
 #include <vector>
 
-/*
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-*/
-
 /*PAGE TABLE CLASS
 - single or multilevel page mapping implementation
 - levelCount = number of levels

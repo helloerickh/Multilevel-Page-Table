@@ -12,16 +12,8 @@
 #include "output_mode_helpers.h"
 
 /*
-CS 480 Operating Systems Assignment #3
-
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-
-NAME: KAVON CACHO
-RED ID: 822794235
-
 SYNOPSIS:
-This assignment intends to simulate virtual address to physical address access of a program. 
+This program intends to simulate virtual address to physical address access of a program. 
 A Page Table structure will serve to store virtual page number to physical frame mapping. When a virtual address is looked up, the corresponding vpn to pfn mapping will be returned. Other wise a frame number will be assigned to this virtual page number.
 
 In addtion, a Translation Lookaside Buffer will store a specified number of VPN to PFN mappings that will circumvent the relatively slow lookup time of the PageTable structure.

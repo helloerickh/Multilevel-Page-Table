@@ -1,16 +1,10 @@
 #include "PageTable.h"
 #include <stdio.h>
 
-/*
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-
-NAME: KAVON CACHO
-RED ID: 822794235
-*/
-
 /*Page Table Constructor
-INPUT: vector of unsigned integers representing page sizes
+INPUT: vector of unsigned integers representing page sizes in bits
+- shift info: number of bits to shift left (MSB <- LSB) to align with LSB of page address
+
 - Initialize class members and pointer to root level*/
 PageTable::PageTable(std::vector<unsigned int> pageSizes){
     this->levelCount = pageSizes.size();

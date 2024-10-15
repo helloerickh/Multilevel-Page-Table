@@ -8,14 +8,6 @@
 #include <algorithm>    //sort
 
 /*
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-
-NAME: KAVON CACHO
-RED ID: 822794135
-*/
-
-/*
 TODO:
 - Extract VPN from virtual address
 - lrureplacement policy

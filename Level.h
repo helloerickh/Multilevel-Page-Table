@@ -6,14 +6,6 @@
 #include "helpers.h"
 #include <vector>
 
-/*
-NAME: ERICK HERNANDEZ
-RED ID: 821321274
-
-NAME: KAVON CACHO
-RED ID: 822794235
-*/
-
 /*LEVEL CLASS
 - level implementation for page table
 - isLeaf = true if leaf level, else false
